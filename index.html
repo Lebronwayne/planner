@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>日常小帳本：待辦、習慣、記帳</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#eef2f6; --card:#ffffff; --ink:#18263a; --mute:#66758a; --line:#d8e0ea;
+  --accent:#2457d6; --accent-ink:#ffffff; --ok:#1f9d6b; --bad:#d4463c; --soft:#e4ebf7;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1622; --card:#182233; --ink:#e6edf7; --mute:#8d9bb0; --line:#2a3750;
+    --accent:#6f9bff; --accent-ink:#0f1622; --ok:#47c795; --bad:#ff7a70; --soft:#22304a;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1622; --card:#182233; --ink:#e6edf7; --mute:#8d9bb0; --line:#2a3750;
+  --accent:#6f9bff; --accent-ink:#0f1622; --ok:#47c795; --bad:#ff7a70; --soft:#22304a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.6;font-size:16px}
+main{max-width:880px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:1.35rem;margin:4px 0 2px;font-weight:700}
+.opts{margin-top:8px;flex-wrap:wrap}
+.opts input,.opts select{flex:1 1 120px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(92vw,420px);background:var(--ink);color:var(--bg);border-radius:12px;padding:12px 14px;z-index:40;display:flex;gap:10px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.toast[hidden]{display:none}
+.toast span{flex:1;word-break:break-word}
+.toast button{background:transparent;border:1px solid currentColor;color:inherit;border-radius:8px;min-height:36px;padding:0 12px;font:inherit;cursor:pointer}
+.hero{font-size:1.6rem;margin:0 0 4px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--card);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--card);z-index:30}
+.bar2{max-width:880px;margin:0 auto;padding:10px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px}
+.brand{font-weight:700;font-size:1.1rem;color:var(--ink);text-decoration:none}
+.top .tabs{margin:0;flex:1 1 100%;order:3}
+.top .date{margin:0 0 0 auto;font-size:.85rem;order:1}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.card{background:var(--bg);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:4px}
+.card h2{margin:0;color:var(--mute);font-size:.9rem;font-weight:500}
+.card .big{font-size:2rem;line-height:1.3}
+.card .meta{margin:0 0 12px}
+.card .btn{margin-top:auto}
+@media (min-width:720px){.top .tabs{flex:0 1 auto;order:2}.top .date{order:3}.bar2{flex-wrap:nowrap}.top .tabs button{padding:8px 22px}.panel{padding:28px}}
+.date{color:var(--mute);font-size:.9rem;margin:0 0 16px}
+.tabs{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:12px;margin-bottom:16px}
+.tabs button{flex:1;border:0;background:transparent;color:var(--mute);font:inherit;font-weight:500;padding:10px 0;border-radius:9px;cursor:pointer;min-height:44px}
+.tabs button[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.row{display:flex;gap:8px}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:44px;min-width:0}
+input[type=text]{flex:1}
+.btn{font:inherit;font-weight:500;background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:0 16px;min-height:44px;cursor:pointer}
+.ghost{background:transparent;color:var(--mute);border:0;font:inherit;cursor:pointer;min-width:44px;min-height:44px;border-radius:10px}
+.ghost:hover{color:var(--bad)}
+.chips{display:flex;gap:6px;margin:14px 0 6px}
+.chips button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:transparent;color:var(--mute);border-radius:99px;padding:4px 12px;cursor:pointer;min-height:32px}
+.chips button[aria-pressed="true"]{background:var(--soft);color:var(--ink);border-color:var(--accent)}
+ul{list-style:none;margin:0;padding:0}
+.item{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding:4px 0}
+.item:first-child{border-top:0}
+.item label{flex:1;display:flex;align-items:center;gap:10px;cursor:pointer;min-height:44px;word-break:break-word}
+.item input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent);flex:none}
+.done span{text-decoration:line-through;color:var(--mute)}
+.due{font-size:.8rem;color:var(--mute)}
+.due.late{color:var(--bad)}
+.empty{color:var(--mute);text-align:center;padding:22px 8px;margin:0}
+.meta{color:var(--mute);font-size:.88rem;margin:10px 0 0}
+.hgrid{display:grid;grid-template-columns:1fr repeat(7,34px);gap:4px;align-items:center}
+.hhead{font-size:.78rem;color:var(--mute);text-align:center}
+.hname{font-weight:500;word-break:break-word;padding-right:6px}
+.hname small{display:block;color:var(--mute);font-weight:400;font-size:.8rem}
+.dot{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:transparent;cursor:pointer;padding:0;justify-self:center}
+.dot[aria-pressed="true"]{background:var(--ok);border-color:var(--ok)}
+.dot.today{border-color:var(--accent)}
+.hrow{display:contents}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.sum div{background:var(--bg);border-radius:10px;padding:10px;text-align:center}
+.sum b{display:block;font-size:1.1rem}
+.sum span{font-size:.8rem;color:var(--mute)}
+.inc{color:var(--ok)} .exp{color:var(--bad)}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--mute);font:inherit;padding:0 14px;min-height:44px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--soft);color:var(--ink)}
+.stack{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.bar{display:grid;grid-template-columns:56px 1fr auto;gap:8px;align-items:center;font-size:.88rem;margin:6px 0}
+.bar i{display:block;height:8px;border-radius:4px;background:var(--accent)}
+.bar div{background:var(--soft);border-radius:4px}
+.tx{display:flex;align-items:center;gap:8px}
+.tx .what{flex:1;min-height:44px;display:flex;flex-direction:column;justify-content:center}
+.tx small{color:var(--mute)}
+.mon{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.mon button{min-width:44px;min-height:44px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;font:inherit;cursor:pointer}
+h2{font-size:1rem;margin:16px 0 4px}
+.foot{display:flex;justify-content:space-between;margin-top:18px;font-size:.82rem;color:var(--mute)}
+.foot button{font:inherit;font-size:.82rem;color:var(--mute);background:none;border:0;text-decoration:underline;cursor:pointer;min-height:32px}
+.bud{background:var(--bg);border-radius:12px;padding:12px;margin-bottom:14px}
+.bud .sum div{background:var(--card)}
+.pbar{height:8px;background:var(--soft);border-radius:4px;overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--ok)}
+.pbar i.over{background:var(--bad)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="bar2">
+  <a class="brand" href="#home">📒 日常小帳本</a>
+  <span class="date" id="today"></span>
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-t="home">總覽</button>
+    <button role="tab" data-t="todo">待辦</button>
+    <button role="tab" data-t="habit">習慣</button>
+    <button role="tab" data-t="money">記帳</button>
+  </nav>
+</div></header>
+<main>
+  <section class="panel" id="view" aria-live="polite"></section>
+  <div class="foot"><span>資料只存在這台裝置的瀏覽器裡</span><button id="reset">清除全部資料</button></div>
+</main>
+<div id="toast" class="toast" role="alert" hidden></div>
+<script>
+(function(){
+var KEY="planner-v1";
+var S={todos:[],habits:[],tx:[],set:{income:0,save:0}};
+var ui={tab:"todo",filter:"all",type:"exp",month:null};
+var CATS={exp:["餐飲","交通","購物","娛樂","居住","其他"],inc:["薪資","獎金","其他"]};
+
+try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);S.todos=p.todos||[];S.habits=p.habits||[];S.tx=p.tx||[];S.set=p.set||{income:0,save:0};}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+
+function pad(n){return n<10?"0"+n:""+n}
+function ds(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+var now=new Date(), TODAY=ds(now);
+ui.month=TODAY.slice(0,7);
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function money(n){return Math.round(n).toLocaleString("zh-TW")}
+var WD=["日","一","二","三","四","五","六"];
+document.getElementById("today").textContent=(now.getMonth()+1)+" 月 "+now.getDate()+" 日 週"+WD[now.getDay()];
+
+var view=document.getElementById("view");
+var tabs=document.getElementById("tabs");
+var TABS=["home","todo","habit","money"];
+
+function setTab(t,fromHash){
+  ui.tab=t;
+  Array.prototype.forEach.call(tabs.children,function(b){b.setAttribute("aria-selected",b.dataset.t===t?"true":"false")});
+  render();
+}
+tabs.addEventListener("click",function(e){var b=e.target.closest("button");if(b){setTab(b.dataset.t);try{history.replaceState(null,"","#"+b.dataset.t)}catch(x){}}});
+
+function render(){
+  if(ui.tab==="home")renderHome();else if(ui.tab==="todo")renderTodo();else if(ui.tab==="habit")renderHabit();else renderMoney();
+}
+
+/* ---------- 提醒 ---------- */
+var toast=document.getElementById("toast");
+function showToast(msg){toast.innerHTML="<span>"+esc(msg)+"</span><button type=\"button\">知道了</button>";toast.hidden=false;toast.querySelector("button").onclick=function(){toast.hidden=true}}
+function checkReminders(){
+  var n=Date.now(),msgs=[];
+  S.todos.forEach(function(t){
+    if(t.done||t.notified||t.remind==null||!t.due||!t.time)return;
+    var p=t.due.split("-"),q=t.time.split(":");
+    var at=new Date(+p[0],+p[1]-1,+p[2],+q[0],+q[1]).getTime();
+    if(n>=at-t.remind*60000){
+      t.notified=true;
+      if(n-at<12*3600000)msgs.push((t.remind===0?"時間到了：":"即將到來（"+t.time+"）：")+t.text);
+    }
+  });
+  if(msgs.length){
+    save();
+    var all=msgs.join("；");
+    showToast(all);
+    try{if("Notification" in window&&Notification.permission==="granted")new Notification("待辦提醒",{body:all})}catch(x){}
+  }
+}
+
+/* ---------- 總覽 ---------- */
+function renderHome(){
+  var st=S.set||{},inc0=+st.income||0,sv=+st.save||0;
+  var dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  var today=0;
+  S.tx.forEach(function(x){if(x.type==="exp"&&x.date===TODAY)today+=x.amt});
+  var open=S.todos.filter(function(t){return !t.done}),late=open.filter(function(t){return t.due&&t.due<TODAY}).length;
+  var hd=S.habits.filter(function(b){return b.days[TODAY]}).length;
+  var tb=Math.max(0,inc0-sv)/dim,rest=tb-today;
+  var h='<h1 class="hero">'+(now.getMonth()+1)+' 月 '+now.getDate()+' 日的進度</h1><p class="meta" style="margin:0 0 18px">待辦、習慣和花費都在這裡，點卡片上的按鈕可以直接前往。</p><div class="cards">';
+  h+='<div class="card"><h2>今日還可花</h2>'+(inc0>0?'<b class="big '+(rest<0?'exp':'inc')+'">'+money(rest)+'</b><p class="meta">今日預算 '+money(tb)+'，已花 '+money(today)+'</p>':'<b class="big">尚未設定</b><p class="meta">設定收入和儲蓄後，會算出每天可花多少</p>')+'<button class="btn" data-go="money">'+(inc0>0?'去記帳':'設定預算')+'</button></div>';
+  h+='<div class="card"><h2>待辦</h2><b class="big">'+open.length+'</b><p class="meta">件未完成'+(late?'，其中 '+late+' 件已逾期':'')+'</p><button class="btn" data-go="todo">看待辦</button></div>';
+  h+='<div class="card"><h2>今天的習慣</h2><b class="big">'+hd+' / '+S.habits.length+'</b><p class="meta">'+(S.habits.length?'項已完成':'還沒有習慣，先加一個吧')+'</p><button class="btn" data-go="habit">去打卡</button></div></div>';
+  view.innerHTML=h;
+}
+
+/* ---------- 待辦 ---------- */
+function renderTodo(){
+  var list=S.todos.filter(function(t){return ui.filter==="all"||(ui.filter==="open"?!t.done:t.done)});
+  list.sort(function(a,b){return (a.done-b.done)||(((a.due||"9")+(a.time||""))>((b.due||"9")+(b.time||""))?1:-1)});
+  var open=S.todos.filter(function(t){return !t.done}).length;
+  var h='<div class="row"><input type="text" id="tt" placeholder="要做什麼？" maxlength="80" aria-label="待辦內容"><button class="btn" id="ta">新增</button></div><div class="row opts"><input type="date" id="td" aria-label="日期"><input type="time" id="tm" aria-label="時間"><select id="tr" aria-label="提前通知"><option value="">不提醒</option><option value="0">準時提醒</option><option value="10">提前 10 分鐘</option><option value="30">提前 30 分鐘</option><option value="60">提前 1 小時</option><option value="1440">提前 1 天</option></select></div><p class="meta" id="tmsg" style="margin:6px 0 0">提醒需要保持網頁開啟（手機請別關掉分頁），時間到時才會通知你。</p>';
+  h+='<div class="chips">'+[["all","全部"],["open","未完成"],["done","已完成"]].map(function(c){return '<button data-f="'+c[0]+'" aria-pressed="'+(ui.filter===c[0])+'">'+c[1]+'</button>'}).join("")+'</div>';
+  if(!list.length){h+='<p class="empty">'+(S.todos.length?"這個分類沒有項目":"還沒有待辦，在上面輸入第一件事吧")+'</p>'}
+  else{h+="<ul>"+list.map(function(t){
+    var late=t.due&&!t.done&&t.due<TODAY;
+    return '<li class="item'+(t.done?" done":"")+'"><label><input type="checkbox" data-id="'+t.id+'"'+(t.done?" checked":"")+'><span>'+esc(t.text)+(t.due?' <em class="due'+(late?" late":"")+'" style="font-style:normal">'+t.due.slice(5).replace("-","/")+(t.time?" "+t.time:"")+(t.remind!=null?" 🔔":"")+(late?" 已逾期":"")+'</em>':"")+'</span></label><button class="ghost" data-del="'+t.id+'" aria-label="刪除">✕</button></li>'}).join("")+"</ul>"}
+  h+='<p class="meta">還有 '+open+' 件未完成</p>';
+  if(S.todos.some(function(t){return t.done}))h+='<button class="ghost" id="tc" style="font-size:.85rem;text-decoration:underline">清除已完成</button>';
+  view.innerHTML=h;
+  var inp=document.getElementById("tt");
+  function add(){var v=inp.value.trim();if(!v){inp.focus();return}var dd=document.getElementById("td").value,tm=document.getElementById("tm").value,rm=document.getElementById("tr").value;
+    if(rm!==""&&!tm){var mm=document.getElementById("tmsg");mm.textContent="要提醒的話，請先選擇時間";mm.className="meta exp";document.getElementById("tm").focus();return}
+    if((tm||rm!=="")&&!dd)dd=TODAY;
+    if(rm!==""){try{if("Notification" in window&&Notification.permission==="default")Notification.requestPermission()}catch(x){}}
+    S.todos.push({id:uid(),text:v,done:false,due:dd||"",time:tm||"",remind:rm===""?null:+rm,notified:false});save();renderTodo();document.getElementById("tt").focus()}
+  document.getElementById("ta").onclick=add;
+  inp.onkeydown=function(e){if(e.key==="Enter")add()};
+}
+view.addEventListener("click",function(e){
+  var g=e.target.closest("[data-go]");if(g){setTab(g.dataset.go);try{history.replaceState(null,"","#"+g.dataset.go)}catch(x){}window.scrollTo(0,0);return}
+  var t=e.target;
+  if(ui.tab==="todo"){
+    if(t.dataset.f){ui.filter=t.dataset.f;renderTodo()}
+    if(t.dataset.del){S.todos=S.todos.filter(function(x){return x.id!==t.dataset.del});save();renderTodo()}
+    if(t.id==="tc"){S.todos=S.todos.filter(function(x){return !x.done});save();renderTodo()}
+  }else if(ui.tab==="habit"){
+    if(t.dataset.hd){var hb=S.habits.find(function(x){return x.id===t.dataset.hid});if(hb){hb.days[t.dataset.hd]=!hb.days[t.dataset.hd];if(!hb.days[t.dataset.hd])delete hb.days[t.dataset.hd];save();renderHabit()}}
+    if(t.dataset.hdel){S.habits=S.habits.filter(function(x){return x.id!==t.dataset.hdel});save();renderHabit()}
+  }else{
+    if(t.dataset.ty){ui.type=t.dataset.ty;renderMoney()}
+    if(t.dataset.mv){var p=ui.month.split("-"),d=new Date(+p[0],+p[1]-1+(+t.dataset.mv),1);ui.month=ds(d).slice(0,7);renderMoney()}
+    if(t.dataset.xdel){S.tx=S.tx.filter(function(x){return x.id!==t.dataset.xdel});save();renderMoney()}
+  }
+});
+view.addEventListener("change",function(e){
+  var t=e.target;
+  if(ui.tab==="todo"&&t.type==="checkbox"){var x=S.todos.find(function(i){return i.id===t.dataset.id});if(x){x.done=t.checked;save();renderTodo()}}
+});
+
+/* ---------- 習慣 ---------- */
+function lastDays(n){var a=[];for(var i=n-1;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);a.push({k:ds(d),w:WD[d.getDay()]})}return a}
+function streak(h){var c=0,i=0;if(!h.days[TODAY])i=1;for(;;i++){var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);if(h.days[ds(d)])c++;else break}return c}
+function renderHabit(){
+  var days=lastDays(7);
+  var h='<div class="row"><input type="text" id="hn" placeholder="想養成什麼習慣？" maxlength="30" aria-label="習慣名稱"><button class="btn" id="ha">新增</button></div>';
+  if(!S.habits.length){h+='<p class="empty">還沒有習慣，先加一個容易做到的，例如「喝水 2000cc」</p>'}
+  else{
+    h+='<div class="hgrid" style="margin-top:16px"><span></span>'+days.map(function(d){return '<span class="hhead">'+d.w+'</span>'}).join("");
+    S.habits.forEach(function(b){
+      var done7=days.filter(function(d){return b.days[d.k]}).length;
+      h+='<div class="hrow"><div class="hname">'+esc(b.name)+'<small>連續 '+streak(b)+' 天，近 7 天 '+done7+'/7 <button class="ghost" style="min-width:0;min-height:0;font-size:.8rem;padding:0 4px" data-hdel="'+b.id+'">刪除</button></small></div>'+
+      days.map(function(d){return '<button class="dot'+(d.k===TODAY?" today":"")+'" data-hid="'+b.id+'" data-hd="'+d.k+'" aria-pressed="'+(!!b.days[d.k])+'" aria-label="'+esc(b.name)+" "+d.k+'"></button>'}).join("")+'</div>';
+    });
+    h+='</div><p class="meta">點圓點標記完成，藍框是今天</p>';
+  }
+  view.innerHTML=h;
+  function add(){var el=document.getElementById("hn"),v=el.value.trim();if(!v){el.focus();return}S.habits.push({id:uid(),name:v,days:{}});save();renderHabit()}
+  document.getElementById("ha").onclick=add;
+  document.getElementById("hn").onkeydown=function(e){if(e.key==="Enter")add()};
+}
+
+/* ---------- 記帳 ---------- */
+function budgetHTML(list,exp){
+  var st=S.set||{income:0,save:0},inc0=+st.income||0,sv=+st.save||0;
+  var p=ui.month.split("-"),dim=new Date(+p[0],+p[1],0).getDate();
+  var h='<div class="bud"><h2 style="margin-top:0">預算分配</h2>';
+  if(inc0>0){
+    var spend=Math.max(0,inc0-sv),base=spend/dim;
+    h+='<p class="meta" style="margin-top:0">每月收入 '+money(inc0)+'，預計儲蓄 '+money(sv)+'，可花 '+money(spend)+'，平均每天 '+money(base)+'</p>';
+    if(ui.month===TODAY.slice(0,7)){
+      var before=0,today=0;
+      list.forEach(function(x){if(x.type==="exp"){if(x.date===TODAY)today+=x.amt;else if(x.date<TODAY)before+=x.amt}});
+      var tb=base,rest=tb-today,diff=base*(now.getDate()-1)-before;
+      h+='<div class="sum"><div><b>'+money(tb)+'</b><span>今日預算</span></div><div><b class="exp">'+money(today)+'</b><span>今日已花</span></div><div><b class="'+(rest<0?"exp":"inc")+'">'+money(rest)+'</b><span>今日還可花</span></div></div>';
+      h+='<div class="pbar"><i class="'+(rest<0?"over":"")+'" style="width:'+Math.min(100,tb>0?today/tb*100:100)+'%"></i></div>';
+      h+='<p class="meta">每天固定預算 = 可花金額 ÷ '+dim+' 天，不會把前幾天的結餘或超支帶到之後。到昨天為止，累計'+(diff>=0?'省下 ':'超支 ')+money(Math.abs(diff))+'。</p>';
+    }
+    var rem=spend-exp,proj=inc0-exp;
+    h+='<p class="meta">本月已花 '+money(exp)+'，可花餘額 <b class="'+(rem<0?"exp":"inc")+'">'+money(rem)+'</b>。照目前花費，月底可存 <b class="'+(proj<sv?"exp":"inc")+'">'+money(proj)+'</b>'+(proj<sv?'（比目標少 '+money(sv-proj)+'）':'（達成目標）')+'</p>';
+  }else h+='<p class="meta" style="margin-top:0">先輸入每月收入和想存的金額，就能算出每天可以花多少。</p>';
+  h+='<details'+(inc0>0?'':' open')+'><summary style="cursor:pointer;min-height:36px;color:var(--mute);font-size:.88rem">'+(inc0>0?'修改設定':'設定金額')+'</summary><div class="row" style="margin-top:8px"><input type="number" id="bi" inputmode="decimal" min="0" placeholder="每月收入" value="'+(inc0||"")+'" style="flex:1" aria-label="每月收入"><input type="number" id="bv" inputmode="decimal" min="0" placeholder="每月預計儲蓄" value="'+(sv||"")+'" style="flex:1" aria-label="每月預計儲蓄"><button class="btn" id="bs">儲存</button></div><p class="meta" id="bm"></p></details></div>';
+  return h;
+}
+function renderMoney(){
+  var list=S.tx.filter(function(x){return x.date.slice(0,7)===ui.month}).sort(function(a,b){return a.date<b.date?1:-1});
+  var inc=0,exp=0,by={};
+  list.forEach(function(x){if(x.type==="inc")inc+=x.amt;else{exp+=x.amt;by[x.cat]=(by[x.cat]||0)+x.amt}});
+  var p=ui.month.split("-");
+  var h='<div class="mon"><button data-mv="-1" aria-label="上個月">‹</button><b>'+p[0]+" 年 "+(+p[1])+' 月</b><button data-mv="1" aria-label="下個月">›</button></div>';
+  h+=budgetHTML(list,exp);
+  h+='<div class="sum"><div><b class="inc">'+money(inc)+'</b><span>收入</span></div><div><b class="exp">'+money(exp)+'</b><span>支出</span></div><div><b>'+money(inc-exp)+'</b><span>結餘</span></div></div>';
+  h+='<div class="stack"><div class="row"><div class="seg"><button data-ty="exp" aria-pressed="'+(ui.type==="exp")+'">支出</button><button data-ty="inc" aria-pressed="'+(ui.type==="inc")+'">收入</button></div><input type="number" id="xa" inputmode="decimal" min="0" placeholder="金額" style="flex:1" aria-label="金額"></div>'+
+  '<div class="row"><select id="xc" aria-label="分類">'+CATS[ui.type].map(function(c){return "<option>"+c+"</option>"}).join("")+'</select><input type="text" id="xn" placeholder="備註（選填）" maxlength="40" aria-label="備註"><input type="date" id="xd" value="'+(ui.month===TODAY.slice(0,7)?TODAY:ui.month+"-01")+'" style="width:140px" aria-label="日期"></div>'+
+  '<button class="btn" id="xs">記一筆</button></div>';
+  var keys=Object.keys(by).sort(function(a,b){return by[b]-by[a]});
+  if(keys.length){h+='<h2>支出分類</h2>'+keys.map(function(k){return '<div class="bar"><span>'+esc(k)+'</span><div><i style="width:'+Math.max(4,by[k]/exp*100)+'%"></i></div><span>'+money(by[k])+'</span></div>'}).join("")}
+  h+='<h2>明細</h2>';
+  if(!list.length)h+='<p class="empty">這個月還沒有紀錄</p>';
+  else h+='<ul>'+list.map(function(x){return '<li class="item tx"><div class="what"><span>'+esc(x.cat)+(x.note?"　"+esc(x.note):"")+'</span><small>'+x.date.slice(5).replace("-","/")+'</small></div><b class="'+x.type+'">'+(x.type==="inc"?"+":"-")+money(x.amt)+'</b><button class="ghost" data-xdel="'+x.id+'" aria-label="刪除">✕</button></li>'}).join("")+'</ul>';
+  view.innerHTML=h;
+  document.getElementById("bs").onclick=function(){
+    var i=parseFloat(document.getElementById("bi").value)||0,v=parseFloat(document.getElementById("bv").value)||0,m=document.getElementById("bm");
+    if(i<=0){m.textContent="請輸入大於 0 的每月收入";return}
+    if(v>=i){m.textContent="預計儲蓄要小於收入，才有錢可以花";return}
+    S.set={income:i,save:v};save();renderMoney();
+  };
+  document.getElementById("xs").onclick=function(){
+    var a=parseFloat(document.getElementById("xa").value);
+    if(!(a>0)){document.getElementById("xa").focus();return}
+    var d=document.getElementById("xd").value||TODAY;
+    S.tx.push({id:uid(),type:ui.type,amt:a,cat:document.getElementById("xc").value,note:document.getElementById("xn").value.trim(),date:d});
+    ui.month=d.slice(0,7);save();renderMoney();
+  };
+}
+
+document.getElementById("reset").onclick=function(){
+  var rb=this;
+  if(rb.dataset.arm!=="1"){rb.dataset.arm="1";rb.textContent="再按一次確認清除（無法復原）";rb.style.color="var(--bad)";rb._t=setTimeout(function(){rb.dataset.arm="";rb.textContent="清除全部資料";rb.style.color=""},4000);return}
+  clearTimeout(rb._t);rb.dataset.arm="";rb.textContent="清除全部資料";rb.style.color="";
+  if(true){S={todos:[],habits:[],tx:[],set:{income:0,save:0}};save();render()}
+};
+
+var h0=(location.hash||"").slice(1);
+setTab(TABS.indexOf(h0)>=0?h0:"home");
+checkReminders();setInterval(checkReminders,20000);document.addEventListener("visibilitychange",checkReminders);
+window.addEventListener("hashchange",function(){var k=(location.hash||"").slice(1);if(TABS.indexOf(k)>=0)setTab(k)});
+})();
+</script>
+</body>
+</html>
